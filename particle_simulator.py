@@ -2,10 +2,16 @@ import tkinter as tk
 import random
 import math
 
-# Constants
 R = 0.0821  # Ideal gas constant (L·atm/mol·K)
 MOLECULE_RADIUS = 5
 MAX_MOLECULES = 30
+
+def speed_to_color(speed, max_speed):
+    # Convert speed to a red-blue gradient (blue = low speed, red = high)
+    ratio = min(speed / max_speed, 1.0)
+    red = int(255 * ratio)
+    blue = int(255 * (1 - ratio))
+    return f"#{red:02x}00{blue:02x}"
 
 class Molecule:
     def __init__(self, canvas, x, y, vx, vy):
@@ -14,12 +20,20 @@ class Molecule:
         self.vy = vy
         self.x = x
         self.y = y
+        self.speed = math.hypot(vx, vy)
+        color = speed_to_color(self.speed, 10)  # max speed for scaling
         self.id = canvas.create_oval(
-            x, y, x + MOLECULE_RADIUS * 2, y + MOLECULE_RADIUS * 2, fill="blue"
+            x, y, x + MOLECULE_RADIUS * 2, y + MOLECULE_RADIUS * 2,
+            fill=color, outline=""
         )
 
+    def update_color(self):
+        self.speed = math.hypot(self.vx, self.vy)
+        color = speed_to_color(self.speed, 10)
+        self.canvas.itemconfig(self.id, fill=color)
+
     def move(self, width, height):
-        # Wall collision
+        # Wall collisions
         if self.x + self.vx < 0 or self.x + self.vx + MOLECULE_RADIUS * 2 > width:
             self.vx = -self.vx
         if self.y + self.vy < 0 or self.y + self.vy + MOLECULE_RADIUS * 2 > height:
@@ -35,10 +49,20 @@ class Molecule:
         dx = other.x - self.x
         dy = other.y - self.y
         distance = math.hypot(dx, dy)
-        if distance < MOLECULE_RADIUS * 2:
-            # Simple 2D elastic collision for equal masses
+        min_dist = MOLECULE_RADIUS * 2
+
+        if distance < min_dist and distance > 0:
+            # Separate overlapping molecules
+            overlap = min_dist - distance
             nx = dx / distance
             ny = dy / distance
+
+            self.x -= nx * overlap / 2
+            self.y -= ny * overlap / 2
+            other.x += nx * overlap / 2
+            other.y += ny * overlap / 2
+
+            # Elastic collision (equal mass)
             dvx = self.vx - other.vx
             dvy = self.vy - other.vy
             impact_speed = dvx * nx + dvy * ny
@@ -54,7 +78,7 @@ class Molecule:
 class GasSimulationApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Gas Molecule Simulation with Collisions")
+        self.root.title("Gas Simulation with Collisions & Energy Visualization")
 
         input_frame = tk.Frame(root)
         input_frame.pack()
@@ -113,16 +137,15 @@ class GasSimulationApp:
         if not self.running:
             return
 
-        width = 400
-        height = 400
+        width, height = 400, 400
 
-        # Check molecule collisions
         for i, m1 in enumerate(self.molecules):
             for m2 in self.molecules[i+1:]:
                 m1.check_collision(m2)
 
         for mol in self.molecules:
             mol.move(width, height)
+            mol.update_color()
 
         self.root.after(20, self.animate)
 
@@ -131,11 +154,15 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = GasSimulationApp(root)
     root.mainloop()
-    
+ 
 '''
-Molecules are modeled as identical circles with elastic collisions.
+1. Collision Fix:
 
-Only pairwise collisions are checked each frame; fine for small numbers.
+    After a collision, we’ll separate overlapping molecules by nudging them apart based on their penetration depth.
 
-Edge case handling is simple—perfect overlap isn't deeply resolved.
+2. Energy-Based Color:
+
+    Kinetic energy = 0.5mv^2 (we’ll assume unit mass).
+
+    Normalize energy to a color gradient (blue = low, red = high).
 '''
