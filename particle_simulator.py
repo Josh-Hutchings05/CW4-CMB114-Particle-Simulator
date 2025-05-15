@@ -91,8 +91,16 @@ class GasSimulationApp:
         self.temp_slider.grid(row=1, column=0, padx=10, pady=5)
         self.pressure_slider.grid(row=2, column=0, padx=10, pady=5)
 
-        self.start_button = tk.Button(control_frame, text="Start Simulation", command=self.start_simulation)
-        self.start_button.grid(row=3, column=0, pady=5)
+        btn_frame = tk.Frame(control_frame)
+        btn_frame.grid(row=3, column=0, pady=5)
+
+        self.start_button = tk.Button(btn_frame, text="Start Simulation", command=self.start_simulation)
+        self.stop_button = tk.Button(btn_frame, text="Stop Simulation", command=self.stop_simulation)
+        self.reset_button = tk.Button(btn_frame, text="Reset Simulation", command=self.reset_simulation)
+
+        self.start_button.pack(side=tk.LEFT, padx=5)
+        self.stop_button.pack(side=tk.LEFT, padx=5)
+        self.reset_button.pack(side=tk.LEFT, padx=5)
 
         self.canvas = tk.Canvas(root, width=400, height=400, bg="white")
         self.canvas.pack()
@@ -128,6 +136,15 @@ class GasSimulationApp:
         self.running = True
         self.animate()
 
+    def stop_simulation(self):
+        self.running = False
+
+    def reset_simulation(self):
+        self.stop_simulation()
+        self.canvas.delete("all")
+        self.molecules = []
+        self.info_label.config(text="Temperature (avg KE): 0.00")
+
     def animate(self):
         if not self.running:
             return
@@ -144,7 +161,7 @@ class GasSimulationApp:
         for mol in self.molecules:
             mol.move(width, height)
             mol.update_color(max_speed)
-            total_energy += mol.vx**2 + mol.vy**2  # KE proxy: v²
+            total_energy += mol.vx**2 + mol.vy**2
 
         avg_ke = total_energy / max(len(self.molecules), 1)
         self.info_label.config(text=f"Temperature (avg KE): {avg_ke:.2f}")
