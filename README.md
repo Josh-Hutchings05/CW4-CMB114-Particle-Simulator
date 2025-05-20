@@ -9,4 +9,4 @@ It is coded in OOP to make this process a bit smoother since I have a bit of pri
 
 --------------------------------------------------------------
 
-To use the program, simply adjust the slider bars to your desired value then press start. your model will be displayed below. the model can be stopped or restarted at any time using the respective button
+To use the program, simply adjust the slider bars to your desired value then press start. your model will be displayed below. the model can be stopped or restarted at any time using the respective button. If you want to change the parameters you must reset before playing again.
