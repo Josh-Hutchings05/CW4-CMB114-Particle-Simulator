@@ -1,3 +1,8 @@
+'''
+Gas particle simulator
+Josh Hutchings
+'''
+
 import tkinter as tk
 import random
 import math
@@ -7,10 +12,13 @@ MOLECULE_RADIUS = 5
 MAX_MOLECULES = 30
 
 def speed_to_color(speed, max_speed):
+    '''defines the colour in the heat map'''
     ratio = min(speed / max_speed, 1.0)
     red = int(255 * ratio)
     blue = int(255 * (1 - ratio))
     return f"#{red:02x}00{blue:02x}"
+
+'''sets up molecules as a class for easier tracking of properties for collision'''
 
 class Molecule:
     def __init__(self, canvas, x, y, vx, vy):
@@ -28,6 +36,7 @@ class Molecule:
         return math.hypot(self.vx, self.vy)
 
     def update_color(self, max_speed):
+        '''handles the heatmapping'''
         color = speed_to_color(self.speed(), max_speed)
         self.canvas.itemconfig(self.id, fill=color)
 
@@ -44,6 +53,7 @@ class Molecule:
                            self.y + MOLECULE_RADIUS * 2)
 
     def check_collision(self, other):
+        '''very basic collision system'''
         dx = other.x - self.x
         dy = other.y - self.y
         distance = math.hypot(dx, dy)
@@ -73,6 +83,7 @@ class Molecule:
 
 class GasSimulationApp:
     def __init__(self, root):
+        '''set up'''
         self.root = root
         self.root.title("Gas Simulation with Energy Visualization")
 
@@ -80,7 +91,7 @@ class GasSimulationApp:
         control_frame.pack()
 
         self.volume_slider = tk.Scale(control_frame, from_=10, to=100, label="Volume (L)", orient=tk.HORIZONTAL)
-        self.temp_slider = tk.Scale(control_frame, from_=100, to=1000, label="Temperature (K)", orient=tk.HORIZONTAL)
+        self.temp_slider = tk.Scale(control_frame, from_=100, to=500, label="Temperature (K)", orient=tk.HORIZONTAL)
         self.pressure_slider = tk.Scale(control_frame, from_=0.5, to=5.0, resolution=0.1, label="Pressure (atm)", orient=tk.HORIZONTAL)
 
         self.volume_slider.set(50)
@@ -110,7 +121,7 @@ class GasSimulationApp:
 
         self.molecules = []
         self.running = False
-
+'''simulation buttons'''
     def start_simulation(self):
         self.canvas.delete("all")
         self.molecules = []
@@ -145,6 +156,7 @@ class GasSimulationApp:
         self.molecules = []
         self.info_label.config(text="Temperature (avg KE): 0.00")
 
+'''animate function required for updating all molecules and checking for collisions'''
     def animate(self):
         if not self.running:
             return
@@ -168,7 +180,7 @@ class GasSimulationApp:
 
         self.root.after(20, self.animate)
 
-# Run the app
+'''Runs the app'''
 if __name__ == "__main__":
     root = tk.Tk()
     app = GasSimulationApp(root)
