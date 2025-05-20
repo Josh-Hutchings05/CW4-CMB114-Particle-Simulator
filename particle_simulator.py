@@ -121,8 +121,9 @@ class GasSimulationApp:
 
         self.molecules = []
         self.running = False
-'''simulation buttons'''
+
     def start_simulation(self):
+        '''simulation buttons'''
         self.canvas.delete("all")
         self.molecules = []
 
@@ -156,8 +157,9 @@ class GasSimulationApp:
         self.molecules = []
         self.info_label.config(text="Temperature (avg KE): 0.00")
 
-'''animate function required for updating all molecules and checking for collisions'''
+
     def animate(self):
+        '''animate function required for updating all molecules and checking for collisions'''
         if not self.running:
             return
 
